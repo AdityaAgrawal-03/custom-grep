@@ -1,6 +1,6 @@
 # Generic Go Makefile
 
-APP_NAME := $(shell basename $(CURDIR))
+APP_NAME := go_grep
 PKG := ./...
 BIN := $(APP_NAME)
 
