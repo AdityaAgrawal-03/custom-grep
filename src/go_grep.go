@@ -14,20 +14,30 @@ import (
 func main() {
 	recursivePtr := flag.Bool("r", false, "recursive search flag")
 	invertPtr := flag.Bool("v", false, "inverted search flag")
+	casePtr := flag.Bool("i", false, "performs case insensitive search")
+	var re *regexp.Regexp
+	var reErr error
 
 	flag.Parse()
 
 	args := flag.Args()
 
 	if len(args) < 1 {
-		log.Fatalln("Usage: gogrep [-r] [-v] <pattern> [filename|directory]")
+		log.Fatalln("Usage: gogrep [-i] [-r] [-v] <pattern> [filename|directory]")
 	}
 
 	pattern := args[0]
+
 	// Compile regex once
-	re, err := regexp.Compile(pattern)
-	if err != nil {
-		log.Fatalf("Invalid regular expression: %s", err)
+
+	if *casePtr {
+		re, reErr = regexp.Compile("(?i)" + pattern)
+	} else {
+		re, reErr = regexp.Compile(pattern)
+	}
+
+	if reErr != nil {
+		log.Fatalf("Invalid regular expression: %s", reErr)
 	}
 
 	fi, _ := os.Stdin.Stat()
@@ -83,7 +93,7 @@ func main() {
 		})
 
 		if recursiveErr != nil {
-			fmt.Printf("Error walking the path %q: %v\n", target, err)
+			fmt.Printf("Error walking the path %q: %v\n", target, recursiveErr)
 		}
 	} else {
 		searchFile(target, re)
