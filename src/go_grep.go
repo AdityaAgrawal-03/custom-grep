@@ -34,7 +34,22 @@ func main() {
 
 	// check if input is piped
 	if (fi.Mode() & os.ModeCharDevice) == 0 {
-		fmt.Println("Input is piped", *invertPtr)
+		// input is coming from command before pipe
+		scanner := bufio.NewScanner(os.Stdin)
+
+		for scanner.Scan() {
+			line := scanner.Text()
+			isMatched := re.MatchString(line)
+
+			if *invertPtr && !isMatched {
+				fmt.Printf("%s\n", line)
+			}
+		}
+
+		if err := scanner.Err(); err != nil {
+			log.Printf("Error reading stdin: %v", err)
+		}
+
 		return
 	}
 
@@ -46,6 +61,7 @@ func main() {
 	target := args[1]
 
 	if *recursivePtr {
+		fmt.Println("first process", target, pattern)
 		recursiveErr := filepath.WalkDir(target, func(path string, d os.DirEntry, err error) error {
 
 			if err != nil {
